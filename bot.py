@@ -29,10 +29,9 @@ logger = logging.getLogger("telegram_bot")
 WELCOME_TEXT = (
     "Здравствуйте.\n"
     "Здесь Вы можете получить данные для входа в программу Memory Guard, "
-    "задать вопросы или оставить комментарии. Я отвечу Вам по возможности оперативно.\n"
-    "\n"
-    "Введите Ваше сообщение"
+    "задать вопросы или оставить комментарии. Я отвечу Вам по возможности оперативно."
 )
+PROMPT_TEXT = "Какой у Вас вопрос/комментарий?"
 
 # Survives process restarts: user id is embedded in the admin-chat message.
 USER_MARKER = re.compile(r"^#u(\d+)\n")
@@ -96,6 +95,7 @@ async def main() -> None:
     @dp.message(CommandStart(), F.chat.type == ChatType.PRIVATE)
     async def cmd_start(message: Message) -> None:
         await message.answer(WELCOME_TEXT)
+        await message.answer(PROMPT_TEXT)
 
     @dp.message(F.chat.type == ChatType.PRIVATE)
     async def from_user(message: Message) -> None:
