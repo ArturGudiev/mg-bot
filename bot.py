@@ -16,6 +16,7 @@ import re
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ChatType
+from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiohttp import web
 
@@ -24,6 +25,14 @@ logging.basicConfig(
     level=logging.INFO,
 )
 logger = logging.getLogger("telegram_bot")
+
+WELCOME_TEXT = (
+    "Здравствуйте.\n"
+    "Здесь Вы можете получить данные для входа в программу Memory Guard, "
+    "задать вопросы или оставить комментарии. Я отвечу Вам по возможности оперативно.\n"
+    "\n"
+    "Введите Ваше сообщение"
+)
 
 # Survives process restarts: user id is embedded in the admin-chat message.
 USER_MARKER = re.compile(r"^#u(\d+)\n")
@@ -84,10 +93,18 @@ async def main() -> None:
 
     await start_web_server()
 
+    @dp.message(CommandStart(), F.chat.type == ChatType.PRIVATE)
+    async def cmd_start(message: Message) -> None:
+        await message.answer(WELCOME_TEXT)
+
     @dp.message(F.chat.type == ChatType.PRIVATE)
     async def from_user(message: Message) -> None:
         if not message.from_user:
             return
+        # Do not relay /start and other slash-commands to the admin chat.
+        if message.text and message.text.startswith("/"):
+            return
+
         header = user_header(message.from_user)
 
         if message.text:
